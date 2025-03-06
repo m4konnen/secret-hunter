@@ -23,48 +23,45 @@ var (
 	listFlag = flag.String("l", "", "Arquivo com lista de URLs para processar")
 	outFile  = flag.String("o", "", "Arquivo de saída para salvar os resultados")
 	format   = flag.String("format", "txt", "Formato de saída: txt ou json")
-	
+
 	regexMap = map[string]string{
-		 // Chaves de API e Tokens
-		 "Google API Key":                   `AIza[0-9A-Za-z-_]{35}`,
-		 "Google Captcha Key":               `6L[0-9A-Za-z-_]{38}|6[0-9a-zA-Z_-]{39}`,
-		 "Google OAuth Access Token":        `ya29\.[0-9A-Za-z\-_]+`,
-		 "Amazon AWS Access Key ID":         `AKIA[0-9A-Z]{16}`,
-		 "Amazon MWS Auth Token":            `amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`,
-		 "Facebook Access Token":            `EAACEdEose0cBA[0-9A-Za-z]+`,
-		 "Mailgun API Key":                  `key-[0-9a-zA-Z]{32}`,
-		 "Twilio API Key":                   `SK[0-9a-fA-F]{32}`,
-		 "Twilio Account SID":               `AC[a-zA-Z0-9_\-]{32}`,
-		 "PayPal Braintree Access Token":    `access_token\$production\$[0-9a-z]{16}\$[0-9a-f]{32}`,
-		 "Square OAuth Secret":              `sq0csp-[0-9A-Za-z\-_]{43}|sq0[a-z]{3}-[0-9A-Za-z\-_]{22,43}`,
-		 "Stripe Standard API Key":          `sk_live_[0-9a-zA-Z]{24}`,
-		 "Stripe Restricted API Key":        `rk_live_[0-9a-zA-Z]{24}`,
-		 "GitHub Access Token":              `ghp_[0-9a-zA-Z]{36}`,
-		 "Slack Token":                      `xox[baprs]-([0-9a-zA-Z]{10,48})?`,
-		 "Heroku API Key":                   `heroku_[0-9a-zA-Z]{25,70}`,
-		 "Dropbox API Key":                  `([a-z0-9]{15}|[a-z0-9]{16})`,
-		 "Shopify Access Token":             `[0-9a-fA-F]{32}`,
-		 "Azure Storage Account Key":        `(?:[a-zA-Z0-9+\/=]{88})`,
-		 "Firebase Cloud Messaging Key":     `AAAA[A-Za-z0-9_-]{7}:[A-Za-z0-9_-]{140}`,
-		 "JWT":                              `eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]*$`,
- 
-		 // Chaves Privadas
-		 "RSA Private Key":                  `-----BEGIN RSA PRIVATE KEY-----`,
-		 "DSA Private Key":                  `-----BEGIN DSA PRIVATE KEY-----`,
-		 "EC Private Key":                   `-----BEGIN EC PRIVATE KEY-----`,
-		 "PGP Private Key Block":            `-----BEGIN PGP PRIVATE KEY BLOCK-----`,
- 
-		 // Senhas e Credenciais
-		 "Generic Password":                 `(?i)(?:pass(?:word|phrase)|secret)(?:[\s:=]|%3A)(["']?[\w!@#$%^&*()]{8,}["']?)`,
-		 "Email Address":                    `[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}`,
-		 "AWS Secret Key":                   `(?i)aws(.{0,20})?['\"][0-9a-zA-Z\/+]{40}['\"]`,
- 
-		 // Outros
-		 "AWS URL":                          `s3\.amazonaws.com[/]+|[a-zA-Z0-9_-]*\.s3\.amazonaws.com`,
-		 "Authorization Basic":              `basic\s*[a-zA-Z0-9=:_\+\/-]+`,
-		 "Authorization Bearer":             `bearer\s*[a-zA-Z0-9_\-\.=:_\+\/]+`,
-		 "Authorization API":                `api[key|\s*]+[a-zA-Z0-9_\-]+`,
-		 "Generic API Key":                  `[a-zA-Z0-9_-]{32,45}`,
+		// Chaves de API e Tokens
+		"Google API Key":                `AIza[0-9A-Za-z-_]{35}`,
+		"Google Captcha Key":            `6L[0-9A-Za-z-_]{38}`,
+		"Google OAuth Access Token":     `ya29\.[0-9A-Za-z\-_]+`,
+		"Amazon AWS Access Key ID":      `AKIA[0-9A-Z]{16}`,
+		"Amazon MWS Auth Token":         `amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`,
+		"Facebook Access Token":         `EAACEdEose0cBA[0-9A-Za-z]+`,
+		"Mailgun API Key":               `key-[0-9a-zA-Z]{32}`,
+		"Twilio API Key":                `SK[0-9a-fA-F]{32}`,
+		"Twilio Account SID":            `AC[a-zA-Z0-9_\-]{32}`,
+		"PayPal Braintree Access Token": `access_token\$production\$[0-9a-z]{16}\$[0-9a-f]{32}`,
+		"Square OAuth Secret":           `sq0csp-[0-9A-Za-z\-_]{43}|sq0[a-z]{3}-[0-9A-Za-z\-_]{22,43}`,
+		"Stripe Standard API Key":       `sk_live_[0-9a-zA-Z]{24}`,
+		"Stripe Restricted API Key":     `rk_live_[0-9a-zA-Z]{24}`,
+		"GitHub Access Token":           `ghp_[0-9a-zA-Z]{36}`,
+		"Slack Token":                   `xox[baprs]-([0-9a-zA-Z]{10,48})?`,
+		"Heroku API Key":                `heroku_[0-9a-zA-Z]{25,70}`,
+		"Azure Storage Account Key":     `(\s|\'|\"|:|^)(?:[a-zA-Z0-9+\/=]{88})(\'|\"|$|\s)`,
+		"Firebase Cloud Messaging Key":  `AAAA[A-Za-z0-9_-]{7}:[A-Za-z0-9_-]{140}`,
+		"JWT":                           `eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*`,
+
+		// Chaves Privadas
+		"RSA Private Key":       `-----BEGIN RSA PRIVATE KEY-----`,
+		"DSA Private Key":       `-----BEGIN DSA PRIVATE KEY-----`,
+		"EC Private Key":        `-----BEGIN EC PRIVATE KEY-----`,
+		"PGP Private Key Block": `-----BEGIN PGP PRIVATE KEY BLOCK-----`,
+
+		// Senhas e Credenciais
+		"Generic Password": `(?i)(?:pass(?:word|phrase)|secret)(?:[\s:=]|%3A)(["']?[\w!@#$%^&*()]{8,}["']?)`,
+		"Email Address":    `[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}`,
+		"AWS Secret Key":   `(?i)aws(.{0,20})?['\"][0-9a-zA-Z\/+]{40}['\"]`,
+
+		// Outros
+		"AWS URL":              `s3\.amazonaws.com[/]+|[a-zA-Z0-9_-]*\.s3\.amazonaws.com`,
+		"Authorization Basic": `(?i)basic\s+[a-zA-Z0-9+/]+={0,2}`,
+		"Authorization Bearer": `bearer\s*[a-zA-Z0-9_\-\.=:_\+\/]+`,
+		"Authorization API":    `api[key|\s*]+[a-zA-Z0-9_\-]+`,
 	}
 )
 
@@ -85,12 +82,20 @@ func main() {
 		for scanner.Scan() {
 			urls = append(urls, scanner.Text())
 		}
+		if err := scanner.Err(); err != nil {
+			fmt.Println("Erro ao ler o arquivo:", err)
+			return
+		}
 	} else {
 		info, _ := os.Stdin.Stat()
 		if info.Mode()&os.ModeCharDevice == 0 {
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				urls = append(urls, scanner.Text())
+			}
+			if err := scanner.Err(); err != nil {
+				fmt.Println("Erro ao ler a entrada padrão:", err)
+				return
 			}
 		} else {
 			fmt.Println("Nenhuma URL fornecida. Use -u, -l ou pipe.")
